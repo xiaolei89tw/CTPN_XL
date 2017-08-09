@@ -24,10 +24,74 @@ import cv2, os, caffe, sys
 from detectors import TextProposalDetector, TextDetector
 import os.path as osp
 from utils.timer import Timer
+import matplotlib.pyplot as plt
+import matplotlib.patches as patches
+from PIL import Image
+import numpy as np
 
-DEMO_IMAGE_DIR="demo_images/"
+DEMO_IMAGE_DIR="Leads/"
+#DEMO_IMAGE_DIR="demo_images/"
 NET_DEF_FILE="models/deploy.prototxt"
 MODEL_FILE="models/ctpn_trained_model.caffemodel"
+
+
+def draw_0(im, bboxes, is_display=True, color=None, caption="Image", wait=False):
+    """
+        boxes: bounding boxes
+    """
+    im=im.copy()
+    fig,ax = plt.subplots(1)
+
+    # Display the image
+    ax.imshow(im)
+
+    for box in bboxes:
+        if color==None:
+            if len(box)==5 or len(box)==9:
+                c=tuple(cm.jet([box[-1]])[0, 2::-1]*255)
+            else:
+                c=tuple(np.random.randint(0, 256, 3))
+        else:
+            c=color
+        cv2.rectangle(im, tuple(box[:2]), tuple(box[2:4]), c)
+
+    if is_display:
+        cv2.imshow(caption, im)
+
+    return im
+
+
+def threshold(coords, min_, max_):
+    return np.maximum(np.minimum(coords, max_), min_)
+
+
+
+def draw1(im, locclist, notes) : 
+#[[  64.          228.40620422  783.          301.28256226    0.9761017 ]
+#x0 y0 x1 y1 
+
+
+    #im = np.array(Image.open(im_file), dtype=np.uint8)
+
+    # Create figure and axes
+    fig,ax = plt.subplots(1)
+
+    # Display the image
+    ax.imshow(im)
+
+    # Create a Rectangle patch
+    for locc in locclist: 
+        d1 = int(locc[3] - locc[1])
+        d0 = int(locc[2] - locc[0])
+        rect = patches.Rectangle( ( int(locc[0]) , int(locc[1]) ),d0,d1,linewidth=1,edgecolor='r',facecolor='none')
+        ax.add_patch(rect)
+
+    #plt.show()
+    fig.savefig(DEMO_IMAGE_DIR + notes + '.png')   # save the figure to file
+
+
+    return True 
+
 
 if len(sys.argv)>1 and sys.argv[1]=="--no-gpu":
     caffe.set_mode_cpu()
@@ -53,13 +117,15 @@ for im_name in demo_imnames:
 
     im, f=resize_im(im, cfg.SCALE, cfg.MAX_SCALE)
     text_lines=text_detector.detect(im)
-
+    print(text_lines)
     print "Number of the detected text lines: %s"%len(text_lines)
     print "Time: %f"%timer.toc()
+    locc = text_lines[0] 
 
-    im_with_text_lines=draw_boxes(im, text_lines, caption=im_name, wait=False)
+    draw1(im, text_lines, im_name)
+    #im_with_text_lines=draw_boxes(im, text_lines, caption=im_name, wait=False)
 
 print "~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~"
 print "Thank you for trying our demo. Press any key to exit..."
-cv2.waitKey(0)
+#cv2.waitKey(0)
 
