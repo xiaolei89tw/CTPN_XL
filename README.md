@@ -1,3 +1,4 @@
+<<<<<<< HEAD
 # Detecting Text in Natural Image with Connectionist Text Proposal Network
 The codes are used for implementing CTPN for scene text detection, described in: 
 
@@ -43,3 +44,7 @@ If you may want to use other Caffe instead of the one we ship for some reasons, 
 
 # License
 The codes are released under the MIT License.
+=======
+# CTPN_XL
+for new opencv, rewrite with matplotlib 
+>>>>>>> 5d0823358287d87cd2ba73e728165e98dfd32990
