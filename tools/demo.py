@@ -31,6 +31,7 @@ import numpy as np
 
 DEMO_IMAGE_DIR="Leads/"
 TEXT_IMAGE_DIR="Texts/"
+Detected_IMAGE_DIR="LeadsOut/"
 #DEMO_IMAGE_DIR="demo_images/"
 NET_DEF_FILE="models/deploy.prototxt"
 MODEL_FILE="models/ctpn_trained_model.caffemodel"
@@ -73,6 +74,39 @@ def cutterimage():
     frame2 = i.crop(((275, 0, 528, 250)))
 
 
+def img2text1(imagefile):
+
+    from PIL import Image
+    import pytesseract
+
+    #pytesseract.pytesseract.tesseract_cmd = imagefile
+    # Include the above line, if you don't have tesseract executable in your PATH
+    # Example tesseract_cmd: 'C:\\Program Files (x86)\\Tesseract-OCR\\tesseract'
+
+    #print(pytesseract.image_to_string(Image.open(imagefile),  lang='eng')) 
+    texts = pytesseract.image_to_string(Image.open(imagefile), lang = 'eng')
+    #rint(pytesseract.image_to_string(Image.open(imagefile), lang='fra')) 
+
+    return texts 
+
+
+def img2text(imagefile):
+    from tesserocr import PyTessBaseAPI, PSM, OEM
+
+
+    with PyTessBaseAPI() as api:
+        api.SetImageFile(imagefile)
+
+        #os = api.DetectOrientationScript()
+        #print ("Orientation: {orient_deg}\nOrientation confidence: {orient_conf}\n"
+        #       "Script: {script_name}\nScript confidence: {script_conf}").format(**os)
+        texts = api.GetUTF8Text() 
+        #print api.AllWordConfidences()
+        #print(texts)
+
+    return texts 
+
+
 
 def draw1(im, locclist, notes) : 
 #[[  64.          228.40620422  783.          301.28256226    0.9761017 ]
@@ -97,10 +131,21 @@ def draw1(im, locclist, notes) :
         frame2 = im2.crop((int(locc[0]) , int(locc[1]), int(locc[2]) , int(locc[3])))  
         candname = TEXT_IMAGE_DIR + "Part" + str(i) + "from" + notes
         frame2.save(candname)
+        texts = img2text(candname)
+        #texts.encode('utf-8')
+        t = texts.encode('ascii', 'ignore').decode('ascii')
+        t = t.rstrip()
+        import csv   
+        fields = str(i) + '\t' + notes + '\t' + t 
+        print fields
+
+        with open('Texts.csv', 'a') as f:
+            writer = csv.writer(f)
+            writer.writerow([fields])
         i += 1 
 
     #plt.show()
-    fig.savefig(DEMO_IMAGE_DIR + notes + '.png')   # save the figure to file
+    fig.savefig(Detected_IMAGE_DIR + notes + '.png')   # save the figure to file
 
 
     return True 
