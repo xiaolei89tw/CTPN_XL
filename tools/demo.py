@@ -30,6 +30,7 @@ from PIL import Image
 import numpy as np
 
 DEMO_IMAGE_DIR="Leads/"
+TEXT_IMAGE_DIR="Texts/"
 #DEMO_IMAGE_DIR="demo_images/"
 NET_DEF_FILE="models/deploy.prototxt"
 MODEL_FILE="models/ctpn_trained_model.caffemodel"
@@ -66,25 +67,37 @@ def threshold(coords, min_, max_):
 
 
 
+def cutterimage(): 
+    from PIL import Image
+    i = Image.open('dt110507dhct.jpg')
+    frame2 = i.crop(((275, 0, 528, 250)))
+
+
+
 def draw1(im, locclist, notes) : 
 #[[  64.          228.40620422  783.          301.28256226    0.9761017 ]
 #x0 y0 x1 y1 
 
 
     #im = np.array(Image.open(im_file), dtype=np.uint8)
-
+    import PIL 
     # Create figure and axes
     fig,ax = plt.subplots(1)
 
     # Display the image
     ax.imshow(im)
-
+    i = 1 
     # Create a Rectangle patch
     for locc in locclist: 
         d1 = int(locc[3] - locc[1])
         d0 = int(locc[2] - locc[0])
         rect = patches.Rectangle( ( int(locc[0]) , int(locc[1]) ),d0,d1,linewidth=1,edgecolor='r',facecolor='none')
         ax.add_patch(rect)
+        im2 = PIL.Image.fromarray(im)
+        frame2 = im2.crop((int(locc[0]) , int(locc[1]), int(locc[2]) , int(locc[3])))  
+        candname = TEXT_IMAGE_DIR + "Part" + str(i) + "from" + notes
+        frame2.save(candname)
+        i += 1 
 
     #plt.show()
     fig.savefig(DEMO_IMAGE_DIR + notes + '.png')   # save the figure to file
